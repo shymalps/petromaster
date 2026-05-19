@@ -48,7 +48,13 @@ class SplashscreeVM extends GetxController {
         );
       }
     } else {
-      Timer(const Duration(seconds: 4), () => Get.offAllNamed(RouteName.login));
+      final isOnboarded = await AuthPreferences.isOnboarded();
+      Timer(
+        const Duration(seconds: 4),
+        () => Get.offAllNamed(
+          isOnboarded ? RouteName.login : RouteName.appDetails,
+        ),
+      );
     }
   }
 }

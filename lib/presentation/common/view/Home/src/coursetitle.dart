@@ -45,7 +45,7 @@ class BrandExcellenceAlternative extends StatelessWidget {
               children: [
                 Flexible(
                   child: Text(
-                    'More Than Just A Brand: A\nJourney Of ',
+                    'More Than Just Training: A\nPath To ',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 22,

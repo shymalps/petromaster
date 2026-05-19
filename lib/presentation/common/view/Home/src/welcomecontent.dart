@@ -21,13 +21,13 @@ class Welcomecontent extends StatelessWidget {
                 color: Color(0xFF2C3E50),
               ),
               children: [
-                TextSpan(text: 'Our Online Class\nWill Grow '),
+                TextSpan(text: 'Train with Global\nExperts. Build '),
                 TextSpan(
                   text: 'Your\n',
                   style: TextStyle(color: Color(0xFFE74C3C)),
                 ),
                 TextSpan(
-                  text: 'Creativity',
+                  text: 'Well Control Skills',
                   style: TextStyle(color: Color(0xFFE74C3C)),
                 ),
               ],
@@ -35,7 +35,7 @@ class Welcomecontent extends StatelessWidget {
           ),
           SizedBox(height: 24),
           const Text(
-            'Convenience of online education, allowing learners\nto acquire new skills at their own pace and from\nany location.',
+            'Safe drilling operations depend on the competence\nof trained personnel. Build confidence, competence,\nand the ability to make right decisions under pressure.',
             style: TextStyle(
               fontSize: 14,
               color: Color(0xFF7F8C8D),
@@ -69,7 +69,7 @@ class Welcomecontent extends StatelessWidget {
                     ),
                     SizedBox(width: 8),
                     Text(
-                      'Quality Video',
+                      'IWCF Certified',
                       style: TextStyle(
                         color: Colors.black87,
                         fontSize: 14,
@@ -103,7 +103,7 @@ class Welcomecontent extends StatelessWidget {
                     ),
                     SizedBox(width: 8),
                     Text(
-                      'Suitable Price',
+                      'IADC Certified',
                       style: TextStyle(
                         color: Colors.black87,
                         fontSize: 14,

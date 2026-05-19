@@ -6,8 +6,13 @@ class Appbarhelper {
   static PageAppBar pageAppbar({
     required String title,
     bool leading = true,
+    bool leadingIcon = true,
   }) {
-    return PageAppBar(title: title, leading: leading);
+    return PageAppBar(
+      title: title,
+      leading: leading,
+      leadingIcon: leadingIcon,
+    );
   }
 
   static Dashboardappbar dashboardAppbar(String name, email) {
@@ -16,6 +21,7 @@ class Appbarhelper {
       email: email,
     );
   }
+}
 
   // static InfoAppbar infoappbar({
   //   required String title,
@@ -23,4 +29,4 @@ class Appbarhelper {
   // }) {
   //   return InfoAppbar(title: title, leading: leading);
   // }
-}
+

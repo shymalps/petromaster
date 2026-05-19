@@ -25,6 +25,7 @@ import '../../../presentation/common/bindings/catorybdng.dart';
 import '../../../presentation/common/bindings/loginbdng.dart';
 import '../../../presentation/common/bindings/splashscreenbdng.dart';
 import '../../../presentation/common/view/AppNavbar/nav.dart';
+import '../../../presentation/common/view/Home/home_page.dart';
 import '../../../presentation/common/view/NavBar/nav.dart';
 import '../../../presentation/common/view/Splashscren/splashscreen.dart';
 import '../../../presentation/common/view/login/loginscreen.dart';
@@ -44,6 +45,7 @@ import 'routig_widget.dart';
 class AppRoutes {
   static final routes = [
     getPage(RouteName.home, const Splash(), [SplashscreenBdng()]),
+    getPage(RouteName.appDetails, const AppDetails(), []),
     // getPage(RouteName.appnav, const AppNavBar(), [
     //   Catorybdng(),
     // ]),

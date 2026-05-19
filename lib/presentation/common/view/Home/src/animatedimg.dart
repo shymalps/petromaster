@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 class AnimatedImg extends StatefulWidget {
+  const AnimatedImg({super.key});
+
   @override
   _AnimatedImgState createState() => _AnimatedImgState();
 }

@@ -40,6 +40,7 @@ class LoginVM extends GetxController {
   void savelogin(LoginModel usermodel) async {
     consolePrint('usermodel');
     await AuthPreferences.setLoggedIn(true);
+    await AuthPreferences.setOnboarded(true);
     await AuthPreferences.setUserId(usermodel.userId.toString());
     await AuthPreferences.setstuId(usermodel.studentId.toString());
     await AuthPreferences.setclassId(usermodel.classId.toString());

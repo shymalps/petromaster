@@ -120,7 +120,7 @@ class PageAppBar extends StatelessWidget implements PreferredSizeWidget {
   const PageAppBar({
     super.key,
     required this.title,
-    this.leading = true,
+    this.leading = true, required bool leadingIcon,
   });
   final String title;
   final bool leading;

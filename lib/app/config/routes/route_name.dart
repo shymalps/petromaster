@@ -26,5 +26,6 @@ class RouteName {
   static const String idcardview = '/idview';
   static const String htmlview = '/htmlview';
   static const studentDetailsView = '/StudentDetailsPage';
-  
+  static const String appDetails = '/appDetails';
+
 }
