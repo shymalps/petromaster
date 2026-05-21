@@ -25,7 +25,7 @@ class SplashscreeVM extends GetxController {
             'Blocked Account',
             'Your account has been blocked. Please contact support for further assistance.',
           );
-        } else if (profileData.feeStatus != 'active') {
+        } else if (profileData.feeStatus.toLowerCase().trim() != 'active') {
           Get.offAllNamed(RouteName.login);
           Dialougehelper.warning(
             Get.context,
@@ -48,13 +48,11 @@ class SplashscreeVM extends GetxController {
         );
       }
     } else {
-      final isOnboarded = await AuthPreferences.isOnboarded();
-      Timer(
-        const Duration(seconds: 4),
-        () => Get.offAllNamed(
-          isOnboarded ? RouteName.login : RouteName.appDetails,
-        ),
-      );
+     
+     Timer(
+  const Duration(seconds: 4),
+  () => Get.offAllNamed(RouteName.appDetails), 
+);
     }
   }
 }

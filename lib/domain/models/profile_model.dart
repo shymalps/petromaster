@@ -29,7 +29,7 @@ class StudentModel {
 
   factory StudentModel.fromJson(Map<String, dynamic> json) {
     return StudentModel(
-      feeStatus: json['fee_status'] ?? '',
+      feeStatus: json['fee_status']?.toString().toLowerCase().trim() ?? '',
       userId: json['user_id'] ?? '',
       studentId: json['student_id'] ?? '',
       email: json['email'] ?? '',

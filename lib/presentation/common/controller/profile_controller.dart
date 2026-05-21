@@ -47,11 +47,9 @@ class Profilevm extends GetxController {
       profileData = StudentModel.fromJson(data);
       consolePrint('profile data $data');
     } catch (e) {
-      consolePrint(
-        '==================> Profile Controller Error',
-        e.toString(),
-      );
-    } finally {
+    profileData = null; 
+    consolePrint('error', e.toString());
+} finally {
       isloading.value = false;
       consolePrint(
         '==================> Profile Controller Completed',
