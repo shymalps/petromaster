@@ -8,7 +8,7 @@ import '../view/videos/videolist/videolist.dart';
 
 class Tabviewvm extends GetxController {
   RxString selectedTab = 'Videos'.obs;
-  List<String> tabs = ['Videos', 'Audios', 'Attachments', 'Notes'];
+  List<String> tabs = ['Videos', 'Audios', 'Photos', 'Notes'];
   void updateselection(String tab) {
     selectedTab.value = tab;
   }
@@ -18,7 +18,7 @@ class Tabviewvm extends GetxController {
       return const VideoList();
     } else if (selectedTab.value == 'Audios') {
       return const Audiolist();
-    } else if (selectedTab.value == 'Attachments') {
+    } else if (selectedTab.value == 'Photos') {
       return const NoteList();
     } else {
       return const Typednotelist();

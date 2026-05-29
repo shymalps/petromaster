@@ -12,7 +12,6 @@ class CourseCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool hasDiscount =
-        courseListModel.offerAmount != null &&
         courseListModel.orgAmount != null &&
         courseListModel.offerAmount != courseListModel.orgAmount;
 
