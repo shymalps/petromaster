@@ -93,12 +93,12 @@ class ListCard extends StatelessWidget {
                     const SizedBox(height: 12),
 
                     // Footer Row
-                    Row(
-                      children: [
-                        Text("Instructor: ${ongoingCourses.staffname} "),
-                        const Spacer(),
-                      ],
-                    ),
+                    // Row(
+                    //   children: [
+                    //     Text("Instructor: ${ongoingCourses.staffname} "),
+                    //     const Spacer(),
+                    //   ],
+                    // ),
                   ],
                 ),
               ),

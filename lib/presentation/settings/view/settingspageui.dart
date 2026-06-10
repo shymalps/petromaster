@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:petromaster/presentation/common/controller/studentresponcecontroller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-// import 'package:path_provider/path_provider.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:petromaster/app/config/theme/text.dart';
 import 'package:petromaster/core/helpers/appbarhelper.dart';
@@ -24,9 +23,7 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final profileVM = Get.find<Profilevm>();
-    // final response = StudentResponse.fromJson(profileVM.profileData!.toJson());
-    // print(response.data?[0].name);
-    // print(response.data?[0].seenNote);
+
     return Scaffold(
       appBar: Appbarhelper.pageAppbar(title: 'Settings', leading: false),
       body: CustomScrollView(
@@ -93,30 +90,6 @@ class SettingsPage extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    // ListTile(
-                    //   leading: const Icon(HugeIcons.strokeRoundedCrown),
-                    //   title: RichText(
-                    //     text: TextSpan(
-                    //       style: DefaultTextStyle.of(context).style,
-                    //       children: <TextSpan>[
-                    //         const TextSpan(
-                    //           text: 'Subscription expires in ',
-                    //           style: TextStyle(color: Colors.black),
-                    //         ),
-                    //         TextSpan(
-                    //           text: profileVM.timestampToDate(
-                    //               profileVM.profileData!.expireDate),
-                    //           style: const TextStyle(color: Colors.grey),
-                    //         ),
-                    //       ],
-                    //     ),
-                    //   ),
-                    //   trailing: Icon(
-                    //     Icons.chevron_right,
-                    //     color: Colors.grey.shade500,
-                    //   ),
-                    //   onTap: () {},
-                    // ),
                     Divider(height: 1, color: Colors.grey.shade300),
                     ListTile(
                       leading: const HugeIcon(
@@ -139,43 +112,6 @@ class SettingsPage extends StatelessWidget {
                         }
                       },
                     ),
-                    // Divider(
-                    //   height: 1,
-                    //   color: Colors.grey.shade300,
-                    // ),
-                    // ListTile(
-                    //   leading: const HugeIcon(
-                    //     icon: HugeIcons.strokeRoundedGlobe02,
-                    //   ),
-                    //   title: const Text('Clear Cache'),
-                    //   trailing: Icon(
-                    //     Icons.chevron_right,
-                    //     color: Colors.grey.shade500,
-                    //   ),
-                    //   onTap: () {
-                    //     // getAppCacheSizeInMB().then((size) async {
-                    //     //   if (size > 0) {
-                    //     //     final condition = await Dialougehelper.confirmation(
-                    //     //       Get.context,
-                    //     //       'App cache size',
-                    //     //       'App cache size: ${size.toStringAsFixed(2)} MB. Do you want to free up space?',
-                    //     //     );
-                    //     //     if (condition) {
-                    //     //       clearAppCache();
-                    //     //     }
-                    //     //     // Dialougehelper.warning(
-                    //     //     //   Get.context,
-                    //     //     //   'App cache size',
-                    //     //     //   'App cache size: ${size.toStringAsFixed(2)} MB. Do you want to free up space?',
-                    //     //     // );
-                    //     //   } else {
-                    //     //     Dialougehelper.info(Get.context, '',
-                    //     //         'your app is already optimized');
-                    //     //   }
-                    //     // });
-                    //     // Navigate to terms and conditions screen
-                    //   },
-                    // ),
                     Divider(height: 1, color: Colors.grey.shade300),
                     ListTile(
                       leading: const HugeIcon(icon: HugeIcons.strokeRoundedId),
@@ -204,21 +140,15 @@ class SettingsPage extends StatelessWidget {
                       onTap: () async {
                         final studentCtrl =
                             Get.find<GetStudentResponseController>();
-                        // Start loading
                         studentCtrl.isloading.value = true;
-
-                        // await studentCtrl.studentData;
                         await studentCtrl.getStudentById(
                           profileVM.profileData!.userId.toString(),
                         );
-
                         studentCtrl.isloading.value = false;
 
                         if (studentCtrl.studentData != null) {
                           Get.toNamed(
                             RouteName.studentDetailsView,
-
-                            ///(call the popup screen)
                             arguments: profileVM.profileData!.profImg,
                           );
                         } else {
@@ -245,18 +175,81 @@ class SettingsPage extends StatelessWidget {
                       },
                     ),
                     Divider(height: 1, color: Colors.grey.shade300),
+
+                    // ── Logout with confirmation ──────────────────────────
                     ListTile(
                       leading: const HugeIcon(
                         icon: HugeIcons.strokeRoundedLogout03,
+                        color: Colors.orange,
                       ),
-                      title: const Text('Log Out'),
+                      title: const Text(
+                        'Log Out',
+                        style: TextStyle(color: Colors.orange),
+                      ),
                       trailing: Icon(
                         Icons.chevron_right,
                         color: Colors.grey.shade500,
                       ),
                       onTap: () async {
-                        await AuthPreferences.logout();
-                        Get.offAllNamed(RouteName.appnav);
+                        // ── Confirmation dialog ───────────────────────────
+                        final confirmed = await showDialog<bool>(
+                          context: context,
+                          builder: (BuildContext ctx) {
+                            return AlertDialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              title: const Row(
+                                children: [
+                                  Icon(Icons.logout, color: Colors.orange),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Log Out',
+                                    style: TextStyle(
+                                      color: Colors.orange,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              content: const Text(
+                                'Are you sure you want to log out of this account?',
+                              ),
+                              actions: [
+                                // Cancel
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(ctx).pop(false),
+                                  child: const Text(
+                                    'Cancel',
+                                    style: TextStyle(color: Colors.grey),
+                                  ),
+                                ),
+                                // Confirm logout
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.orange,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                  onPressed: () =>
+                                      Navigator.of(ctx).pop(true),
+                                  child: const Text(
+                                    'Log Out',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+
+                        // Only logout if user confirmed
+                        if (confirmed == true) {
+                          await AuthPreferences.logout();
+                          Get.offAllNamed(RouteName.appnav);
+                        }
                       },
                     ),
                   ],
@@ -269,17 +262,6 @@ class SettingsPage extends StatelessWidget {
     );
   }
 }
-
-// Future<double> getAppCacheSizeInMB() async {
-//   try {
-//     final tempDir = await getTemporaryDirectory();
-//     final sizeInBytes = await _getTotalSizeOfFilesInDir(tempDir);
-//     return sizeInBytes / (1024 * 1024); // Convert to MB
-//   } catch (e) {
-//     print('Error calculating cache size: $e');
-//     return 0.0;
-//   }
-// }
 
 Future<int> _getTotalSizeOfFilesInDir(FileSystemEntity file) async {
   if (file is File) {
@@ -296,17 +278,6 @@ Future<int> _getTotalSizeOfFilesInDir(FileSystemEntity file) async {
   return 0;
 }
 
-// Future<void> clearAppCache() async {
-//   try {
-//     final tempDir = await getTemporaryDirectory();
-//     await _deleteFilesInDirectory(tempDir);
-//     // You might also want to clear other caches like Hive or shared preferences if needed
-//   } catch (e) {
-//     print('Error clearing cache: $e');
-//     rethrow; // You can handle this error in your UI
-//   }
-// }
-
 Future<void> _deleteFilesInDirectory(FileSystemEntity file) async {
   if (file is File) {
     try {
@@ -321,9 +292,8 @@ Future<void> _deleteFilesInDirectory(FileSystemEntity file) async {
       await _deleteFilesInDirectory(child);
     }
     try {
-      await file.delete(); // Delete the directory itself if empty
+      await file.delete();
     } catch (e) {
-      // Directory might not be empty if some files couldn't be deleted
       print('Error deleting directory ${file.path}: $e');
     }
   }

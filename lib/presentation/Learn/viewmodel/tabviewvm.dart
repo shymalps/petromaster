@@ -7,21 +7,21 @@ import '../view/typed_notes/typednotelist.dart';
 import '../view/videos/videolist/videolist.dart';
 
 class Tabviewvm extends GetxController {
-  RxString selectedTab = 'Videos'.obs;
-  List<String> tabs = ['Videos', 'Audios', 'Photos', 'Notes'];
+  RxString selectedTab = 'Notes'.obs;
+  List<String> tabs = ['Notes', 'Photos', 'Videos', 'Audios'];
   void updateselection(String tab) {
     selectedTab.value = tab;
   }
 
   Widget getpage() {
-    if (selectedTab.value == 'Videos') {
-      return const VideoList();
-    } else if (selectedTab.value == 'Audios') {
-      return const Audiolist();
+    if (selectedTab.value == 'Notes') {
+      return const Typednotelist();
     } else if (selectedTab.value == 'Photos') {
       return const NoteList();
+    } else if (selectedTab.value == 'Videos') {
+      return const VideoList();
     } else {
-      return const Typednotelist();
+      return const  Audiolist();
     }
   }
 }
