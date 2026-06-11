@@ -8,6 +8,7 @@ class CourseListModel {
   final String duration;
   final String lectures;
   final String language;
+  final List<CourseStaff> staff; // ← NEW
 
   CourseListModel({
     required this.siteCourseId,
@@ -19,6 +20,7 @@ class CourseListModel {
     required this.duration,
     required this.lectures,
     required this.language,
+    this.staff = const [], // ← NEW (default empty so old code won't break)
   });
 
   factory CourseListModel.fromJson(Map<String, dynamic> json) {
@@ -32,6 +34,11 @@ class CourseListModel {
       duration: json['duration'] ?? '',
       lectures: json['lectures'] ?? '',
       language: json['language'] ?? '',
+      // parse staff list if present in response
+      staff: (json['staff'] as List<dynamic>?)
+              ?.map((e) => CourseStaff.fromJson(e))
+              .toList() ??
+          [],
     );
   }
 
@@ -46,6 +53,39 @@ class CourseListModel {
       'duration': duration,
       'lectures': lectures,
       'language': language,
+      'staff': staff.map((s) => s.toJson()).toList(),
     };
   }
+}
+
+/// Lightweight staff model for course list cards.
+class CourseStaff {
+  final String name;
+  final String? profImage;
+  final String gender;
+
+  const CourseStaff({
+    required this.name,
+    this.profImage,
+    this.gender = '',
+  });
+
+  factory CourseStaff.fromJson(Map<String, dynamic> json) {
+    return CourseStaff(
+      name: json['name'] ?? '',
+      profImage: json['prof_image']?.toString().isNotEmpty == true
+          ? json['prof_image']
+          : null,
+      gender: json['gender'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'prof_image': profImage ?? '',
+        'gender': gender,
+      };
+
+  /// First letter of name for avatar fallback
+  String get initial => name.isNotEmpty ? name[0].toUpperCase() : '?';
 }

@@ -4,6 +4,9 @@ import '../../../../../app/config/theme/colors.dart';
 import '../../../../../core/res/assets/images.dart';
 import '../../../../../domain/models/courselist_model.dart';
 
+// Base URL for instructor profile images — adjust to match your project constant
+const String _kImageBase =
+    'https://lms.petromasteracademy.com/assets/images/';
 
 class CourseCard extends StatelessWidget {
   const CourseCard({super.key, required this.courseListModel});
@@ -176,6 +179,13 @@ class CourseCard extends StatelessWidget {
                           ),
                         ],
                       ),
+
+                      // ─── Instructor Strip ─────────────────────────
+                      if (courseListModel.staff.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        _InstructorStrip(staff: courseListModel.staff),
+                      ],
+
                       const SizedBox(height: 14),
                       Container(height: 1, color: const Color(0xFFF0F0F0)),
                       const SizedBox(height: 12),
@@ -203,7 +213,7 @@ class CourseCard extends StatelessWidget {
                             ),
                           ],
                           const Spacer(),
-                          // "View" pill — detail page opened by card tap
+                          // "View" pill
                           Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 14, vertical: 7),
@@ -248,6 +258,166 @@ class CourseCard extends StatelessWidget {
   }
 }
 
+// ─── Instructor Strip ────────────────────────────────────────────────────────
+/// Shows stacked avatars + names for all instructors in the course card.
+class _InstructorStrip extends StatelessWidget {
+  const _InstructorStrip({required this.staff});
+  final List<CourseStaff> staff;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // Stacked avatars (max 3 shown)
+        _StackedAvatars(staff: staff),
+        const SizedBox(width: 8),
+        // Names column
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Instructors',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Color(0xFF999999),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                staff.map((s) => s.name).join(' • '),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF1A1A2E),
+                  height: 1.3,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Overlapping circular avatars — up to 3, then "+N" badge
+class _StackedAvatars extends StatelessWidget {
+  const _StackedAvatars({required this.staff});
+  final List<CourseStaff> staff;
+
+  static const double _size = 30.0;
+  static const double _overlap = 10.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final visible = staff.take(3).toList();
+    final extra = staff.length - visible.length;
+    final totalWidth = _size + (_overlap * (visible.length - 1)) +
+        (extra > 0 ? _overlap : 0);
+
+    return SizedBox(
+      width: totalWidth,
+      height: _size,
+      child: Stack(
+        children: [
+          ...List.generate(visible.length, (i) {
+            return Positioned(
+              left: i * (_size - _overlap),
+              child: _Avatar(staff: visible[i]),
+            );
+          }),
+          if (extra > 0)
+            Positioned(
+              left: visible.length * (_size - _overlap),
+              child: Container(
+                width: _size,
+                height: _size,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF5B6BF8),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 1.5),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  '+$extra',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Avatar extends StatelessWidget {
+  const _Avatar({required this.staff});
+  final CourseStaff staff;
+
+  static const double _size = 30.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final imageUrl = (staff.profImage != null && staff.profImage!.isNotEmpty)
+        ? '$_kImageBase${staff.profImage}'
+        : null;
+
+    return Container(
+      width: _size,
+      height: _size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white, width: 1.5),
+      ),
+      child: ClipOval(
+        child: imageUrl != null
+            ? Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _InitialAvatar(staff: staff),
+              )
+            : _InitialAvatar(staff: staff),
+      ),
+    );
+  }
+}
+
+class _InitialAvatar extends StatelessWidget {
+  const _InitialAvatar({required this.staff});
+  final CourseStaff staff;
+
+  // Pick a color based on gender
+  Color get _bg => staff.gender == 'female'
+      ? const Color(0xFFE91E8C)
+      : const Color(0xFF5B6BF8);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: _bg,
+      alignment: Alignment.center,
+      child: Text(
+        staff.initial,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 class _MetaChip extends StatelessWidget {
   const _MetaChip(
       {required this.icon, required this.label, required this.iconColor});

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-// import 'package:oyster_lms/app/config/theme/text.dart';
 
 import '../../../../../app/config/routes/route_name.dart';
 import '../../../../../app/config/theme/colors.dart';
@@ -20,7 +19,6 @@ class ListCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      // height: 300,
       child: Card(
         elevation: 3,
         shape: RoundedRectangleBorder(
@@ -37,36 +35,27 @@ class ListCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Image
-              Container(
-                height: 150,
-                width: double.infinity,
-                decoration: BoxDecoration(boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.6),
-                    offset: const Offset(0, 5),
-                    blurRadius: 8,
+              // ── Image ──────────────────────────────────────────────
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
+                ),
+                child: SizedBox(
+                  height: 150,
+                  width: double.infinity,
+                  child: FadeInImage.assetNetwork(
+                    placeholder: AppImages.coursedefault,
+                    image: ongoingCourses.profile,
+                    fit: BoxFit.fitWidth,
+                    imageErrorBuilder: (context, error, _) =>
+                        Image.asset(AppImages.coursedefault, fit: BoxFit.cover),
                   ),
-                ]),
-                child: ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(16), bottom: Radius.circular(16)),
-                    child: FadeInImage.assetNetwork(
-                      placeholder:
-                          AppImages.coursedefault, // Placeholder image path
-                      image: ongoingCourses.profile, // URL of the image
-                      fit: BoxFit.fitWidth,
-                      imageErrorBuilder: (context, error, stackTrace) {
-                        return Image.asset(
-                          AppImages.coursedefault, // Fallback asset image path
-                          fit: BoxFit.cover,
-                        );
-                      },
-                    )),
+                ),
               ),
 
+              // ── Body ───────────────────────────────────────────────
               Padding(
-                padding: const EdgeInsets.all(12.0),
+                padding: const EdgeInsets.all(12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -76,6 +65,7 @@ class ListCard extends StatelessWidget {
                       style: const TextStyle(
                         color: Colors.green,
                         fontWeight: FontWeight.w600,
+                        fontSize: 13,
                       ),
                     ),
 
@@ -84,28 +74,43 @@ class ListCard extends StatelessWidget {
                     // Title
                     Text(
                       ongoingCourses.subName,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
 
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
 
-                    // Footer Row
-                    // Row(
-                    //   children: [
-                    //     Text("Instructor: ${ongoingCourses.staffname} "),
-                    //     const Spacer(),
-                    //   ],
-                    // ),
+                    // ── Instructor row — overflow-safe ─────────────
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(
+                          Icons.person_outline,
+                          size: 15,
+                          color: Colors.grey,
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            "Instructor: ${ongoingCourses.staffname}",
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Colors.black87,
+                            ),
+                            softWrap: true,
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
+
+              // ── Explore Button ─────────────────────────────────────
               InkWell(
-                onTap: () {
-                  Get.toNamed(RouteName.sublist);
-                },
+                onTap: () => Get.toNamed(RouteName.sublist),
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: const BoxDecoration(
@@ -117,10 +122,13 @@ class ListCard extends StatelessWidget {
                   ),
                   width: double.infinity,
                   child: Center(
-                      child: AppTextHelper.button(
-                          text: 'Explore', fcolor: AppColors.white)),
+                    child: AppTextHelper.button(
+                      text: 'Explore',
+                      fcolor: AppColors.white,
+                    ),
+                  ),
                 ),
-              )
+              ),
             ],
           ),
         ),

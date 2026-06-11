@@ -21,9 +21,11 @@ class LoginRepo {
       'device_id': deviceID,
     };
     consolePrint(data.toString());
+    print("deviceid is $deviceID and userId is $userId");
     consolePrint(
         '======================>In login Repo (function storedeviceId) Started');
     consolePrint('url ${AppEndpoints.updatedeviceId}');
+    
     dynamic response =
         await _apiService.postApi(data, AppEndpoints.updatedeviceId);
     
