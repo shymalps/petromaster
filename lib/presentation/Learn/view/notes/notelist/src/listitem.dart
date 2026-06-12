@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get/get.dart';
 import 'package:hugeicons/hugeicons.dart';
-// import 'package:oyster_lms/app/config/theme/text.dart';
-// import 'package:oyster_lms/core/helpers/dialougehelper.dart';
 
 import '../../../../../../app/Di/dimensions.dart';
 import '../../../../../../app/config/routes/route_name.dart';
@@ -10,7 +9,6 @@ import '../../../../../../app/config/theme/text.dart';
 import '../../../../../../core/helpers/dialougehelper.dart';
 import '../../../../viewmodel/notelistvm.dart';
 
-// import 'package:iconsax/iconsax.dart';
 enum Documenttype { pdf, img, doc, oth }
 
 class AttractivePdfListItem extends StatefulWidget {
@@ -22,7 +20,6 @@ class AttractivePdfListItem extends StatefulWidget {
   final String? date;
   final bool isFavorite;
   final bool isfolder;
-  // final VoidCallback onTap;
   final VoidCallback? onMorePressed;
   final VoidCallback? onFavoritePressed;
 
@@ -32,7 +29,6 @@ class AttractivePdfListItem extends StatefulWidget {
     required this.fileSize,
     this.date,
     this.isFavorite = false,
-    // required this.onTap,
     this.onMorePressed,
     this.onFavoritePressed,
     super.key,
@@ -90,44 +86,9 @@ class _AttractivePdfListItemState extends State<AttractivePdfListItem> {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Theme.of(context).colorScheme.primary,
-                        Theme.of(context).colorScheme.primary.withOpacity(0.7),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .primary
-                            .withOpacity(0.3),
-                        blurRadius: _isHovered ? 8 : 4,
-                        offset: const Offset(0, 2),
-                      )
-                    ],
-                  ),
-                  child: widget.isfolder
-                      ? HugeIcon(
-                         icon: HugeIcons.strokeRoundedFolder02 ,
-                          size: 28,
-                          color: Colors.white,
-                        )
-                      : HugeIcon(
-                          icon: getIcon(widget.fileurl[0]),
-                          // HugeIcons.strokeRoundedPdf01,
-                          size: 28,
-                          color: Colors.white,
-                        )),
-              // :
-              // _getIcon(widget.fileurl)),
+              // ── Leading thumbnail / icon ───────────────────────────
+              _buildLeading(context),
+
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -173,11 +134,6 @@ class _AttractivePdfListItemState extends State<AttractivePdfListItem> {
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        // Icon(
-                        //   Icons.download,
-                        //   size: 14,
-                        //   color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                        // ),
                         const SizedBox(width: 4),
                         Text(
                           '${widget.fileSize} MB',
@@ -216,18 +172,6 @@ class _AttractivePdfListItemState extends State<AttractivePdfListItem> {
                   ],
                 ),
               ),
-              // if (widget.onMorePressed != null) ...[
-              //   const SizedBox(width: 8),
-              //   IconButton(
-              //     icon: Icon(
-              //       Icons.more,
-              //       size: 22,
-              //       color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-              //     ),
-              //     onPressed: widget.onMorePressed,
-              //     splashRadius: 20,
-              //   ),
-              // ],
             ],
           ),
         ),
@@ -235,8 +179,120 @@ class _AttractivePdfListItemState extends State<AttractivePdfListItem> {
     );
   }
 
-   dynamic getIcon(String fileurl) {
-    _gettype(fileurl);
+  /// Leading box on the left of the list item.
+  /// - For image files (jpg/jpeg/png) -> shows the actual image thumbnail
+  ///   loaded from the API URL (with placeholder + error fallback icon).
+  /// - For folders / pdf / other types -> shows the original gradient icon.
+  Widget _buildLeading(BuildContext context) {
+    const double size = 56;
+
+    // Single file that is an image -> real thumbnail
+    if (!widget.isfolder &&
+        widget.fileurl.isNotEmpty &&
+        _gettype(widget.fileurl[0]) == Documenttype.img) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: CachedNetworkImage(
+          imageUrl: widget.fileurl[0],
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          placeholder: (context, url) => _iconBox(context, isFolder: false),
+          errorWidget: (context, url, error) =>
+              _iconBox(context, isFolder: false),
+        ),
+      );
+    }
+
+    // Folder whose first item is an image -> show that image as the
+    // folder cover with a small folder badge.
+    if (widget.isfolder &&
+        widget.fileurl.isNotEmpty &&
+        _gettype(widget.fileurl[0]) == Documenttype.img) {
+      return SizedBox(
+        width: size,
+        height: size,
+        child: Stack(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: CachedNetworkImage(
+                imageUrl: widget.fileurl[0],
+                width: size,
+                height: size,
+                fit: BoxFit.cover,
+                placeholder: (context, url) =>
+                    _iconBox(context, isFolder: true),
+                errorWidget: (context, url, error) =>
+                    _iconBox(context, isFolder: true),
+              ),
+            ),
+            Positioned(
+              right: 3,
+              bottom: 3,
+              child: Container(
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: HugeIcon(
+                  icon: HugeIcons.strokeRoundedFolder02,
+                  size: 12,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Default: gradient icon box (folder / pdf / doc / other)
+    return _iconBox(context, isFolder: widget.isfolder);
+  }
+
+  /// Original gradient icon box, kept for non-image files and as a
+  /// placeholder/error fallback for image thumbnails.
+  Widget _iconBox(BuildContext context, {required bool isFolder}) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      width: 56,
+      height: 56,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Theme.of(context).colorScheme.primary,
+            Theme.of(context).colorScheme.primary.withOpacity(0.7),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+            blurRadius: _isHovered ? 8 : 4,
+            offset: const Offset(0, 2),
+          )
+        ],
+      ),
+      child: isFolder
+          ? HugeIcon(
+              icon: HugeIcons.strokeRoundedFolder02,
+              size: 28,
+              color: Colors.white,
+            )
+          : HugeIcon(
+              icon: getIcon(widget.fileurl.isNotEmpty ? widget.fileurl[0] : ''),
+              size: 28,
+              color: Colors.white,
+            ),
+    );
+  }
+
+  dynamic getIcon(String fileurl) {
     switch (_gettype(fileurl)) {
       case Documenttype.pdf:
         return HugeIcons.strokeRoundedPdf02;
@@ -286,36 +342,56 @@ class _AttractivePdfListItemState extends State<AttractivePdfListItem> {
             child: ListView.builder(
               itemCount: files.length,
               itemBuilder: (context, index) {
-                return _buildOption(
-                    getIcon(widget.fileurl[index]), 'Demo ${index + 1}', () {
-                  switch (_gettype(widget.fileurl[index])) {
-                    case Documenttype.pdf:
-                      Get.toNamed(RouteName.pdfview,
-                          arguments: widget.fileurl[index]);
-                      break;
-                    case Documenttype.img:
-                      Get.toNamed(RouteName.imgview,
-                          arguments: widget.fileurl[index]);
-                      break;
-                    default:
-                      Dialougehelper.error(
-                          context, 'Error', 'Unsupported file type');
-                      break;
-                  }
-                });
+                final isImg = _gettype(files[index]) == Documenttype.img;
+                return ListTile(
+                  leading: isImg
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: CachedNetworkImage(
+                            imageUrl: files[index],
+                            width: 44,
+                            height: 44,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => SizedBox(
+                              width: 44,
+                              height: 44,
+                              child: HugeIcon(
+                                icon: getIcon(files[index]),
+                                color: Colors.indigo,
+                              ),
+                            ),
+                            errorWidget: (context, url, error) => SizedBox(
+                              width: 44,
+                              height: 44,
+                              child: HugeIcon(
+                                icon: getIcon(files[index]),
+                                color: Colors.indigo,
+                              ),
+                            ),
+                          ),
+                        )
+                      : HugeIcon(icon: getIcon(files[index]), color: Colors.indigo),
+                  title: Text('Demo ${index + 1}', style: const TextStyle(fontSize: 16)),
+                  onTap: () {
+                    switch (_gettype(files[index])) {
+                      case Documenttype.pdf:
+                        Get.toNamed(RouteName.pdfview, arguments: files[index]);
+                        break;
+                      case Documenttype.img:
+                        Get.toNamed(RouteName.imgview, arguments: files[index]);
+                        break;
+                      default:
+                        Dialougehelper.error(
+                            context, 'Error', 'Unsupported file type');
+                        break;
+                    }
+                  },
+                );
               },
             ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildOption(dynamic icon, String text, VoidCallback onTap) {
-    return ListTile(
-      leading: HugeIcon(icon: icon, color: Colors.indigo),
-      title: Text(text, style: TextStyle(fontSize: 16)),
-      onTap: onTap,
     );
   }
 }

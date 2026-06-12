@@ -53,7 +53,9 @@ class _HtmlViewerState extends State<HtmlViewer> {
   }
   .content {
     color: #444;
-    text-align: justify;
+    text-align: left;
+    word-break: normal;
+    overflow-wrap: break-word;
   }
 </style>
 </head>
