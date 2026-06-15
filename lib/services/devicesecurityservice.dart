@@ -20,9 +20,9 @@ import 'package:petromaster/core/utils/debuprint.dart';
 ///
 /// Device identifiers used
 /// ────────────────────────
-/// • Android — `AndroidDeviceInfo.fingerprint`
-///   A build-specific string: brand/product/device:release/id/incremental:type/tags
-///   Stable across reboots and app reinstalls; changes only on OS/build updates.
+/// • Android — board + brand + hardware + model (hardware constants)
+///   Stable composite of hardware fields. Does not change on OS updates.
+
 ///
 /// • iOS — `IosDeviceInfo.identifierForVendor`
 ///   A UUID per (app vendor, device) pair. Persists across app reinstalls
@@ -40,7 +40,15 @@ class DeviceSecurityService {
   static Future<String> getDeviceId() async {
     if (Platform.isAndroid) {
       final info = await _deviceInfo.androidInfo;
-      final id = info.fingerprint.trim();
+      // Use hardware-based fields instead of fingerprint.
+      // fingerprint includes the build incremental number which changes on
+      // every OTA/OS update — causing false "mismatch" blocks after updates.
+      // board + brand + hardware + model are hardware constants that stay
+      // the same across OS updates, reboots, and app reinstalls.
+      final id =
+          '${info.board}-${info.brand}-${info.hardware}-${info.model}'
+              .toLowerCase()
+              .trim();
       consolePrint('📱 [DeviceSecurity] Android device ID: $id');
       return id;
     }

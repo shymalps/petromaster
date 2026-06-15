@@ -18,11 +18,15 @@ class ScreenProtectionService {
   ///
   /// Safe to call multiple times — subsequent calls are no-ops.
   static Future<void> enable() async {
+    print("screen protect enable....  ");
     if (_isEnabled) return;
+    print("screen protect enable.... 2  ");
     try {
+
       if (Platform.isAndroid) {
         // FLAG_SECURE: all screenshots and screen recordings will be black.
         await ScreenProtector.preventScreenshotOn();
+        print("screenshort prevent....");
         consolePrint(
           '🛡️ [ScreenProtection] Android FLAG_SECURE — enabled',
         );
@@ -38,6 +42,8 @@ class ScreenProtectionService {
       }
       _isEnabled = true;
     } catch (e) {
+      print("screen protect error....  ");
+      print("screen protect error....  $e");
       consolePrint('❌ [ScreenProtection] enable() failed', e.toString());
     }
   }
