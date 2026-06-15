@@ -1,4 +1,3 @@
-
 import '../../AuthPref.dart';
 import '../../core/constant/constants.dart';
 
@@ -35,29 +34,21 @@ class AppEndpoints {
     return '${Constants.appBaseUrl}get_table_muti_row?tname=lession&where=topicid&value=$topicId';
   }
 
-
-    static Future<String> getCoursedetails() async {
+  static Future<String> getCoursedetails() async {
     String? classId = await AuthPreferences.getclassId();
     return '${Constants.appBaseUrl}courseDetails/$classId';
   }
 
-
-
   static Future<String> getCoursedetails2(String courseId) async {
     return '${Constants.appBaseUrl}course_details/$courseId';
   }
-  /////////////////////////////////////
-  //  static Future<String>getStudentResponse() async {
-  //   String? classId = await AuthPreferences.getclassId();
-  //   return '${Constants.appBaseUrl}getUserDatas/$classId';
-
-  // }
 
   static Future<String> getprofile() async {
     String? userID = await AuthPreferences.getUserId();
     return '${Constants.appBaseUrl}ProfileData/$userID';
   }
 
+  // ── Static endpoints ──────────────────────────────────────────────────────
   static const String login = '${Constants.appBaseUrl}user_login';
   static const String examlist = '${Constants.appBaseUrl}view_exam_list';
   static const String questions = '${Constants.appBaseUrl}exam_start';
@@ -76,4 +67,7 @@ class AppEndpoints {
       '${Constants.appBaseUrl}get_table_sin_row?tname=admin_profile&where=profile_id&value=1';
   static const String getstudymaterials =
       '${Constants.appBaseUrl}get_studydata_topicid';
+
+
+  static const String checkversion = '${Constants.appBaseUrl}check_version/';
 }

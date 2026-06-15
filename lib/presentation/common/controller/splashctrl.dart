@@ -1,21 +1,35 @@
 import 'dart:async';
 
 import 'package:get/get.dart';
+import 'package:petromaster/presentation/common/controller/appupdtevm.dart';
 
 import '../../../AuthPref.dart';
 import '../../../app/config/routes/route_name.dart';
 import '../../../core/helpers/dialougehelper.dart';
+
 import 'profile_controller.dart';
 
 class SplashscreeVM extends GetxController {
-  final profileVM = Get.find<Profilevm>();
+  final _profileVM = Get.find<Profilevm>();
+
+
+  final _updateVM = AppUpdateVM();
+
   bool isloggedin = false;
+
   Future<void> checklogin() async {
+    // ── Step 1: Check for app update first ───────────────────────────────────
+    // This runs silently. If an update is available, a dialog is shown.
+    // The user can tap "Later" to continue or "Update Now" to go to the store.
+    await _updateVM.checkForUpdate();
+
+    // ── Step 2: Normal login / profile flow ──────────────────────────────────
     isloggedin = await AuthPreferences.isLoggedIn();
 
     if (isloggedin) {
-      await profileVM.getProfile();
-      final profileData = profileVM.profileData;
+      await _profileVM.getProfile();
+      final profileData = _profileVM.profileData;
+
       if (profileData != null) {
         if (profileData.status == '2') {
           await AuthPreferences.logout();
@@ -35,7 +49,7 @@ class SplashscreeVM extends GetxController {
         } else {
           Timer(
             const Duration(seconds: 4),
-            () => Get.offAllNamed(RouteName.navbar), // Fixed
+            () => Get.offAllNamed(RouteName.navbar),
           );
         }
       } else {
@@ -48,11 +62,10 @@ class SplashscreeVM extends GetxController {
         );
       }
     } else {
-     
-     Timer(
-  const Duration(seconds: 4),
-  () => Get.offAllNamed(RouteName.appDetails), 
-);
+      Timer(
+        const Duration(seconds: 4),
+        () => Get.offAllNamed(RouteName.appDetails),
+      );
     }
   }
 }
