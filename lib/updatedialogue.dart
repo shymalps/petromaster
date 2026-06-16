@@ -131,23 +131,7 @@ class _DialogContent extends StatelessWidget {
                 ),
 
                 // Later button (hidden if force update)
-                if (!forceUpdate) ...[
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 44,
-                    child: TextButton(
-                      onPressed: () => Get.back(),
-                      style: TextButton.styleFrom(
-                        foregroundColor: Colors.grey.shade500,
-                      ),
-                      child: const Text(
-                        'Later',
-                        style: TextStyle(fontSize: 14),
-                      ),
-                    ),
-                  ),
-                ],
+              
               ],
             ),
           ),

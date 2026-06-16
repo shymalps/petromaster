@@ -18,12 +18,10 @@ class SplashscreeVM extends GetxController {
   bool isloggedin = false;
 
   Future<void> checklogin() async {
-    // ── Step 1: Check for app update first ───────────────────────────────────
-    // This runs silently. If an update is available, a dialog is shown.
-    // The user can tap "Later" to continue or "Update Now" to go to the store.
+
     await _updateVM.checkForUpdate();
 
-    // ── Step 2: Normal login / profile flow ──────────────────────────────────
+
     isloggedin = await AuthPreferences.isLoggedIn();
 
     if (isloggedin) {
