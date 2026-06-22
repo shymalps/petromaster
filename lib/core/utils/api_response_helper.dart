@@ -1,6 +1,26 @@
 class ApiResponseHelper {
+  /// Returns true for any recognised "success" value from the server.
+  ///
+  /// Different API endpoints on this backend return different formats:
+  ///   {"status": "success"}  ← exam_start (works)
+  ///   {"status": 1}          ← next_question (was failing)
+  ///   {"status": "1"}        ← alternative string form
+  ///   {"status": true}       ← boolean form
+  ///   {"status": "ok"}       ← plain ok form
+  ///
+  /// Previously only "success" (exact string) was accepted, causing
+  /// "Failed to submit answer" even when the server actually accepted the data.
   static bool isSuccess(dynamic response) {
-    return response is Map && response['status'] == 'success';
+    if (response is! Map) return false;
+    final status = response['status'];
+    return status == 'success' ||
+        status == 'ok' ||
+        status == 'OK' ||
+        status == 1 ||
+        status == '1' ||
+        status == true ||
+        status == 200 ||
+        status == '200';
   }
 
   static String message(dynamic response) {

@@ -27,8 +27,6 @@ class ExamInstructionsState extends State<ExamInstructions>
   @override
   void initState() {
     super.initState();
-    // final examattendVm = Get.find<Examattendvm>();
-    // examattendVm.getQuestions();
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
@@ -153,6 +151,8 @@ class ExamInstructionsState extends State<ExamInstructions>
 
                                 // Start Button
                                 _buildStartButton(context),
+                                // Bottom padding so content clears nav bar
+                                const SizedBox(height: 24),
                               ],
                             ),
                           ),
@@ -232,6 +232,10 @@ class ExamInstructionsState extends State<ExamInstructions>
 
   Widget _buildSummaryCard(BuildContext context, String examDuration,
       String markperquestion, String totalQuestion) {
+    // FIX: Safely parse values to avoid FormatException on empty strings
+    final int total = int.tryParse(totalQuestion) ?? 0;
+    final int mark = int.tryParse(markperquestion) ?? 0;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -269,13 +273,22 @@ class ExamInstructionsState extends State<ExamInstructions>
             color: Colors.grey.shade200,
           ),
           const SizedBox(height: 16),
+          // FIX: Wrap each item in Expanded so Row children share space evenly
+          // and long values never push siblings out of bounds.
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildSummaryItem('Total Score',
-                  '${int.parse(totalQuestion) * int.parse(markperquestion)}'),
-              _buildSummaryItem('Duration', '$examDuration min'),
-              _buildSummaryItem('Questions', totalQuestion),
+              Expanded(
+                child: _buildSummaryItem(
+                  'Total Score',
+                  '${total * mark}',
+                ),
+              ),
+              Expanded(
+                child: _buildSummaryItem('Duration', '$examDuration min'),
+              ),
+              Expanded(
+                child: _buildSummaryItem('Questions', totalQuestion),
+              ),
             ],
           ),
         ],
@@ -285,9 +298,12 @@ class ExamInstructionsState extends State<ExamInstructions>
 
   Widget _buildSummaryItem(String title, String value) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           value,
+          overflow: TextOverflow.ellipsis, // FIX: prevent right overflow
+          maxLines: 1,
           style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w700,
@@ -297,6 +313,8 @@ class ExamInstructionsState extends State<ExamInstructions>
         const SizedBox(height: 4),
         Text(
           title,
+          overflow: TextOverflow.ellipsis, // FIX: prevent right overflow
+          maxLines: 1,
           style: TextStyle(
             fontSize: 12,
             color: Colors.grey.shade600,
@@ -306,9 +324,7 @@ class ExamInstructionsState extends State<ExamInstructions>
     );
   }
 
-  Widget _buildSectionTitle(
-    String title,
-  ) {
+  Widget _buildSectionTitle(String title) {
     return Text(
       title,
       style: const TextStyle(
@@ -319,15 +335,17 @@ class ExamInstructionsState extends State<ExamInstructions>
     );
   }
 
-  Widget _buildDetailGrid(String totalQus, String markperquestion, negativemark,
-      String examDuration) {
+  Widget _buildDetailGrid(String totalQus, String markperquestion,
+      negativemark, String examDuration) {
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       crossAxisCount: 2,
-      childAspectRatio: 3,
-      crossAxisSpacing: 16,
-      mainAxisSpacing: 16,
+      // FIX: Was 3 (width:height = 3:1) → cells were only ~49px tall, too short
+      // for icon (36px) + two text lines (~36px). Raised to 2.4 for proper fit.
+      childAspectRatio: 2.4,
+      crossAxisSpacing: 12,
+      mainAxisSpacing: 12,
       children: [
         _buildDetailTile(
           Icons.format_list_numbered_rounded,
@@ -337,19 +355,19 @@ class ExamInstructionsState extends State<ExamInstructions>
         ),
         _buildDetailTile(
           Icons.star_rate_rounded,
-          'Marks per Question',
+          'Marks / Question',
           markperquestion,
           const Color(0xFF4FD1C5),
         ),
         _buildDetailTile(
           Icons.warning_rounded,
-          'Negative Marking',
+          'Negative Mark',
           '$negativemark',
           const Color(0xFFED8936),
         ),
         _buildDetailTile(
           Icons.timer_rounded,
-          'Exam Duration',
+          'Duration',
           '$examDuration min',
           AppColors.primary,
         ),
@@ -360,7 +378,7 @@ class ExamInstructionsState extends State<ExamInstructions>
   Widget _buildDetailTile(
       IconData icon, String title, String value, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -373,40 +391,52 @@ class ExamInstructionsState extends State<ExamInstructions>
         ],
       ),
       child: Row(
+        // FIX: was missing crossAxisAlignment — default is center, which is fine
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // Icon circle — fixed size, won't shrink
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(7),
             decoration: BoxDecoration(
               color: color.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 20,
-            ),
+            child: Icon(icon, color: color, size: 18),
           ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade600,
+          const SizedBox(width: 8),
+          // FIX: Expanded prevents horizontal overflow.
+          // Previously, Column had no constraint on width, so it could push
+          // the Row wider than its parent → "overflowed by 5/17px on the right".
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              // FIX: mainAxisSize.min lets the Column shrink to its content
+              // instead of stretching to full tile height and overflowing.
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis, // FIX: clip long labels
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey.shade600,
+                  ),
                 ),
-              ),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF2D3748),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis, // FIX: clip long values
+                  style: const TextStyle(
+                    fontSize: 14, // FIX: reduced from 16 to fit tile height
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF2D3748),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -436,7 +466,8 @@ class ExamInstructionsState extends State<ExamInstructions>
               'Use the navigation buttons to move between questions.'),
           _buildInstructionItem(
               'Timer will be shown at the top of the screen.'),
-          _buildInstructionItem('Don\'t  close or switch the app during exam.'),
+          _buildInstructionItem(
+              'Don\'t close or switch the app during exam.'),
           _buildInstructionItem('Submit your answers before time runs out.'),
         ],
       ),
@@ -450,7 +481,7 @@ class ExamInstructionsState extends State<ExamInstructions>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            margin: const EdgeInsets.only(top: 4, right: 12),
+            margin: const EdgeInsets.only(top: 6, right: 12),
             width: 6,
             height: 6,
             decoration: const BoxDecoration(

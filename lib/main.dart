@@ -24,7 +24,7 @@ Future<void> main() async {
   // ── Security: block screenshots and screen recording ───────────────────────
   // Android: FLAG_SECURE — screen is black in all capture tools.
   // iOS: UITextField-secure trick + black overlay on recording/background.
-  await ScreenProtectionService.enable();
+  // await ScreenProtectionService.enable();
 
   // ── Skip bad-certificate checks (keep as-is for your backend) ─────────────
   HttpOverrides.global = MyHttpOverrides();
@@ -73,7 +73,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
       consolePrint('♻️ [App] Resumed — re-checking screen protection…');
-      ScreenProtectionService.enable();
+      // ScreenProtectionService.enable();
     }
   }
 

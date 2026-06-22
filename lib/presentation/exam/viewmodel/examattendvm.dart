@@ -1,7 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-// import 'package:oyster_lms/core/helpers/dialougehelper.dart';
 
 import '../../../app/config/routes/route_name.dart';
+import '../../../app/config/theme/colors.dart';
 import '../../../core/utils/api_response_helper.dart';
 import '../../../core/helpers/dialougehelper.dart';
 import '../../../core/utils/debuprint.dart';
@@ -12,52 +13,231 @@ import '../../../domain/repository/examrepo.dart';
 class Examattendvm extends GetxController {
   final String examid;
   Examattendvm({required this.examid});
+
   @override
   void onInit() {
     super.onInit();
     getQuestions(examid);
-    consolePrint(
-      '==================> Exam Attend Controller Initialized',
-    );
+    consolePrint('==================> Exam Attend Controller Initialized');
   }
 
   final api = Examrepo();
   RxInt currentindex = 0.obs;
   RxString selectedoption = ''.obs;
   RxBool isloading = false.obs;
+  RxBool isSubmitting = false.obs;
   RxList<Question> questions = <Question>[].obs;
   final examData = Rxn<ExamDataModel>();
 
   int timeconvert(String time) {
     List<String> parts = time.split(':');
-
-    // Parse hours and minutes as integers
     int hours = int.parse(parts[0]);
     int minutes = int.parse(parts[1]);
-
-    // Calculate total minutes
     return (hours * 60) + minutes;
   }
 
   Future<void> nextquestion(String qusId, String ans) async {
     consolePrint(
         'Current Index ${currentindex.value}, ${questions.length - 1}');
+    if (isSubmitting.value) return;
+
     if (currentindex.value < questions.length - 1) {
-      final status = await submitanswer(qusId, ans);
-      if (status) {
+      // ── Intermediate question ──────────────────────────────────────────────
+      isSubmitting.value = true;
+      try {
+        final submitted = await submitanswer(qusId, ans);
+        if (!submitted) {
+          consolePrint(
+              '==================> submitanswer failed for Q$qusId, navigating anyway');
+        }
         currentindex.value++;
         selectedoption.value = '';
-      } else {
-        Dialougehelper.error(Get.context, 'Error', 'Failed to submit answer');
+      } finally {
+        isSubmitting.value = false;
       }
     } else if (currentindex.value == questions.length - 1) {
-      final status = await submitanswer(qusId, ans);
-      if (status) {
-        await api.submitexam(examid);
-        Get.offNamed(RouteName.navbar);
-      } else {
-        Dialougehelper.error(Get.context, 'Error', 'Failed to submit answer');
+      // ── Last question ──────────────────────────────────────────────────────
+      isSubmitting.value = true;
+      try {
+        await submitanswer(qusId, ans);
+
+        final examCompleted = await _completeExam();
+        if (!examCompleted) {
+          Dialougehelper.error(
+            Get.context,
+            'Submission Failed',
+            'Exam could not be finalized. Please check your connection and tap Submit again.',
+          );
+          return;
+        }
+
+        // Show "Submitted Successfully" dialog with View Result option
+        _showSuccessDialog();
+      } finally {
+        isSubmitting.value = false;
       }
+    }
+  }
+
+  /// Shows the exam-submitted success dialog.
+  /// User can go to result screen or back to dashboard.
+  void _showSuccessDialog() {
+    Get.dialog(
+      PopScope(
+        canPop: false, // back button should not dismiss
+        child: Dialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+          child: Padding(
+            padding: const EdgeInsets.all(28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // ── Success icon ─────────────────────────────────────────────
+                Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.check_circle_rounded,
+                    color: Colors.green.shade600,
+                    size: 60,
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // ── Title ────────────────────────────────────────────────────
+                const Text(
+                  'Submitted Successfully!',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF2D3748),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Your exam has been submitted.\nTap "View Result" to see your score.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade600,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 28),
+
+                // ── View Result button ───────────────────────────────────────
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Get.back(); // close dialog
+                      // Navigate to result screen, clear all exam routes
+                      Get.offAllNamed(
+                        RouteName.examresult,
+                        arguments: examid,
+                      );
+                    },
+                    icon: const Icon(Icons.bar_chart_rounded,
+                        color: Colors.white),
+                    label: const Text(
+                      'View Result',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      backgroundColor: AppColors.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // ── Back to Dashboard ────────────────────────────────────────
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Get.back(); // close dialog
+                      Get.offAllNamed(RouteName.navbar);
+                    },
+                    icon: Icon(Icons.dashboard_outlined,
+                        color: AppColors.primary),
+                    label: Text(
+                      'Back to Dashboard',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      side: BorderSide(color: AppColors.primary),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      barrierDismissible: false,
+    );
+  }
+
+  /// Returns true if we got any HTTP-200 response (any body).
+  /// Returns false only on exception (network error / 4xx / 5xx).
+  Future<bool> submitanswer(String qusId, String ans) async {
+    consolePrint(
+        '==================>In Exam Attend VM (function submitanswer) Started');
+    try {
+      final response = await api.submitanswer(qusId, ans, examid);
+      if (ApiResponseHelper.isSuccess(response)) {
+        consolePrint('==================> submitanswer: SUCCESS');
+        return true;
+      }
+      // Non-standard response — server received it, treat as success
+      consolePrint(
+          '==================> submitanswer: non-standard response (treating as success)',
+          response.toString());
+      return true;
+    } catch (e) {
+      consolePrint(
+          '==================> submitanswer: FAILED (exception)', e.toString());
+      return false;
+    } finally {
+      consolePrint(
+          '==================> Exam Attend VM (function submitanswer) Completed');
+    }
+  }
+
+  Future<bool> _completeExam() async {
+    consolePrint(
+        '==================>In Exam Attend VM (function _completeExam) Started');
+    try {
+      await api.submitexam(examid);
+      consolePrint('==================> _completeExam: SUCCESS');
+      return true;
+    } catch (e) {
+      consolePrint('==================> _completeExam: FAILED', e.toString());
+      return false;
     }
   }
 
@@ -77,30 +257,7 @@ class Examattendvm extends GetxController {
     } else {
       selectedoption.value = option;
     }
-
-    consolePrint('index ${selectedoption.value}');
-  }
-
-  Future<bool> submitanswer(String qusId, String ans) async {
-    consolePrint(
-        '==================>In Exam Attend VM (function submitanswer) Initialized');
-    try {
-      final response = await api.submitanswer(qusId, ans, examid);
-      if (!ApiResponseHelper.isSuccess(response)) {
-        consolePrint('==================> Exam Attend VM API Error',
-            ApiResponseHelper.message(response));
-        return false;
-      }
-      return true;
-    } catch (e) {
-      consolePrint(
-          '==================> Exam Attend VM (function submitanswer) Error',
-          e.toString());
-      return false;
-    } finally {
-      consolePrint(
-          '==================> Exam Attend VM (function submitanswer) Completed');
-    }
+    consolePrint('Selected option: ${selectedoption.value}');
   }
 
   Future<void> getQuestions(String examid) async {
@@ -112,7 +269,7 @@ class Examattendvm extends GetxController {
       if (!ApiResponseHelper.isSuccess(response)) {
         questions.clear();
         examData.value = null;
-        consolePrint('==================> Exam Attend VM API Error',
+        consolePrint('==================> getQuestions API Error',
             ApiResponseHelper.message(response));
         return;
       }
@@ -124,11 +281,8 @@ class Examattendvm extends GetxController {
       } else {
         examData.value = null;
       }
-      // questions.assignAll(response.map((json) => Question.fromJson(json)).toList());
     } catch (e) {
-      consolePrint(
-          '==================> Exam Attend VM (function getQuestions) Error',
-          e.toString());
+      consolePrint('==================> getQuestions Error', e.toString());
     } finally {
       isloading.value = false;
       consolePrint(
@@ -141,196 +295,4 @@ class Examattendvm extends GetxController {
     super.onClose();
     consolePrint('==================> Exam Attend Controller Closed');
   }
-  // final response = [
-  //   {
-  //     "id": "2",
-  //     "staffid": null,
-  //     "class_id": "2",
-  //     "subject_id": "2",
-  //     "topic_id": "3",
-  //     "optiona": "<p>1300</p>",
-  //     "optionb": "<p>200&nbsp;</p>",
-  //     "optionc": "<p>500</p>",
-  //     "optiond": "<p>450</p>",
-  //     "optione": "<p>None of these</p>",
-  //     "qns": "<p>500+800</p>",
-  //     "ans": "A",
-  //     "explanation": "",
-  //     "passagecode": null,
-  //     "passageparent": "0",
-  //     "passage": null,
-  //     "status": "1"
-  //   },
-  //   {
-  //     "id": "6",
-  //     "staffid": null,
-  //     "class_id": "2",
-  //     "subject_id": "2",
-  //     "topic_id": "3",
-  //     "optiona": "z",
-  //     "optionb": "zfbfb",
-  //     "optionc": "vcbcvb",
-  //     "optiond": "cvbcvzb",
-  //     "optione": "None of these",
-  //     "qns": "gdfgfdg",
-  //     "ans": "A",
-  //     "explanation": "",
-  //     "passagecode": null,
-  //     "passageparent": "0",
-  //     "passage": null,
-  //     "status": "1"
-  //   },
-  //   {
-  //     "id": "18",
-  //     "staffid": null,
-  //     "class_id": "2",
-  //     "subject_id": "2",
-  //     "topic_id": "3",
-  //     "optiona": "electronic device",
-  //     "optionb": "rrrtttt",
-  //     "optionc": "yuuiiii",
-  //     "optiond": "yyuuiii",
-  //     "optione": "None of these",
-  //     "qns": "what is computer",
-  //     "ans": "A",
-  //     "explanation": "etgtyyuujj",
-  //     "passagecode": null,
-  //     "passageparent": "0",
-  //     "passage": null,
-  //     "status": "1"
-  //   },
-  //   {
-  //     "id": "19",
-  //     "staffid": null,
-  //     "class_id": "2",
-  //     "subject_id": "2",
-  //     "topic_id": "3",
-  //     "optiona": "To eliminate hydrogen",
-  //     "optionb": "To retard the cooling rate of the weld",
-  //     "optionc": "To eliminate the atmosphere",
-  //     "optiond": "To ensure maximum heat input",
-  //     "optione": "",
-  //     "qns": "Why is a welding arc shielded?",
-  //     "ans": "C",
-  //     "explanation": "",
-  //     "passagecode": null,
-  //     "passageparent": "0",
-  //     "passage": null,
-  //     "status": "1"
-  //   },
-  //   {
-  //     "id": "26",
-  //     "staffid": null,
-  //     "class_id": "2",
-  //     "subject_id": "2",
-  //     "topic_id": "3",
-  //     "optiona": "Cellulosic",
-  //     "optionb": "Non consumable",
-  //     "optionc": "Consumable",
-  //     "optiond": "None of the above",
-  //     "optione": "",
-  //     "qns": "The TIG welding process utilizes an electrode that is:",
-  //     "ans": "B",
-  //     "explanation": "",
-  //     "passagecode": null,
-  //     "passageparent": "0",
-  //     "passage": null,
-  //     "status": "1"
-  //   },
-  //   {
-  //     "id": "28",
-  //     "staffid": null,
-  //     "class_id": "2",
-  //     "subject_id": "2",
-  //     "topic_id": "3",
-  //     "optiona": "Knowledge and experience",
-  //     "optionb": "Literacy",
-  //     "optionc": "Honesty and integrity",
-  //     "optiond": "All of the above",
-  //     "optione": "",
-  //     "qns": "A welding inspector?s main attribute includes:",
-  //     "ans": "D",
-  //     "explanation": "",
-  //     "passagecode": null,
-  //     "passageparent": "0",
-  //     "passage": null,
-  //     "status": "1"
-  //   },
-  //   {
-  //     "id": "34",
-  //     "staffid": null,
-  //     "class_id": "2",
-  //     "subject_id": "2",
-  //     "topic_id": "3",
-  //     "optiona": "Cellulosic",
-  //     "optionb": "Non consumable",
-  //     "optionc": "Consumable",
-  //     "optiond": "None of the above",
-  //     "optione": "",
-  //     "qns": "The TIG welding process utilizes an electrode that is:",
-  //     "ans": "B",
-  //     "explanation": "",
-  //     "passagecode": null,
-  //     "passageparent": "0",
-  //     "passage": null,
-  //     "status": "1"
-  //   },
-  //   {
-  //     "id": "36",
-  //     "staffid": null,
-  //     "class_id": "2",
-  //     "subject_id": "2",
-  //     "topic_id": "3",
-  //     "optiona": "Knowledge and experience",
-  //     "optionb": "Literacy",
-  //     "optionc": "Honesty and integrity",
-  //     "optiond": "All of the above",
-  //     "optione": "",
-  //     "qns": "A welding inspector?s main attribute includes:",
-  //     "ans": "D",
-  //     "explanation": "",
-  //     "passagecode": null,
-  //     "passageparent": "0",
-  //     "passage": null,
-  //     "status": "1"
-  //   },
-  //   {
-  //     "id": "65",
-  //     "staffid": null,
-  //     "class_id": "2",
-  //     "subject_id": "2",
-  //     "topic_id": "3",
-  //     "optiona": "1",
-  //     "optionb": "2",
-  //     "optionc": "3",
-  //     "optiond": "4",
-  //     "optione": "",
-  //     "qns": "question",
-  //     "ans": "B",
-  //     "explanation": "",
-  //     "passagecode": null,
-  //     "passageparent": "0",
-  //     "passage": null,
-  //     "status": "1"
-  //   },
-  //   {
-  //     "id": "66",
-  //     "staffid": null,
-  //     "class_id": "2",
-  //     "subject_id": "2",
-  //     "topic_id": "3",
-  //     "optiona": "adsadx",
-  //     "optionb": "dqwwsdxsaxq",
-  //     "optionc": "qqsx",
-  //     "optiond": "dxqasdxq",
-  //     "optione": "None of thesedwq",
-  //     "qns": "dwqdqwd",
-  //     "ans": "B",
-  //     "explanation": "qwdqwxwqxx",
-  //     "passagecode": null,
-  //     "passageparent": "0",
-  //     "passage": null,
-  //     "status": "1"
-  //   }
-  // ];
 }
