@@ -7,6 +7,7 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:petromaster/app/config/theme/text.dart';
 import 'package:petromaster/core/helpers/appbarhelper.dart';
 import 'package:petromaster/presentation/common/view/Aboutus/aboutus.dart';
+import 'package:petromaster/presentation/settings/view/webview.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../AuthPref.dart';
@@ -95,21 +96,20 @@ class SettingsPage extends StatelessWidget {
                       leading: const HugeIcon(
                         icon: HugeIcons.strokeRoundedDocumentValidation,
                       ),
-                      title: const Text('Data privacy terms'),
+                      title: const Text('Data Privacy Policy'),
                       trailing: Icon(
                         Icons.chevron_right,
                         color: Colors.grey.shade500,
                       ),
-                      onTap: () async {
-                        Uri url = Uri.parse(
-                          "https://lms.petromasteracademy.com/privacy_policy",
+
+                      onTap: () {
+                        Get.to(
+                          () => const WebViewPage(
+                            url:
+                                "https://lms.petromasteracademy.com/privacy_policy",
+                            title: "Data Privacy Policy",
+                          ),
                         );
-                        if (!await launchUrl(
-                          url,
-                          mode: LaunchMode.inAppWebView,
-                        )) {
-                          throw Exception('Could not launch $url');
-                        }
                       },
                     ),
                     Divider(height: 1, color: Colors.grey.shade300),
@@ -218,8 +218,7 @@ class SettingsPage extends StatelessWidget {
                               actions: [
                                 // Cancel
                                 TextButton(
-                                  onPressed: () =>
-                                      Navigator.of(ctx).pop(false),
+                                  onPressed: () => Navigator.of(ctx).pop(false),
                                   child: const Text(
                                     'Cancel',
                                     style: TextStyle(color: Colors.grey),
@@ -233,8 +232,7 @@ class SettingsPage extends StatelessWidget {
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                   ),
-                                  onPressed: () =>
-                                      Navigator.of(ctx).pop(true),
+                                  onPressed: () => Navigator.of(ctx).pop(true),
                                   child: const Text(
                                     'Log Out',
                                     style: TextStyle(color: Colors.white),

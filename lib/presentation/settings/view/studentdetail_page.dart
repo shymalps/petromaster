@@ -136,11 +136,11 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
                     label: 'Batch',
                     value: studentCtrl.studentData?.classId ?? 'N/A',
                   ),
-                  _buildInfoRow(
-                    icon: HugeIcons.strokeRoundedCalendar01,
-                    label: 'Enrollment Date',
-                    value: _formatDate(studentCtrl.studentData?.expireDate),
-                  ),
+                  // _buildInfoRow(
+                  //   icon: HugeIcons.strokeRoundedCalendar01,
+                  //   label: 'Enrollment Date',
+                  //   value: _formatDate(studentCtrl.studentData?.expireDate),
+                  // ),
                   _buildInfoRow(
                     icon: HugeIcons.strokeRoundedCheckmarkCircle02,
                     label: 'Status',

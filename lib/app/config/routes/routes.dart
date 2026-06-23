@@ -1,5 +1,6 @@
 import 'package:petromaster/app/config/routes/route_name.dart';
 import 'package:petromaster/presentation/Learn/view/typed_notes/src/typednoteviewer.dart';
+import 'package:petromaster/presentation/settings/view/imageview.dart';
 import 'package:petromaster/presentation/settings/view/studentdetail_page.dart';
 import 'package:get/get.dart';
 
@@ -57,8 +58,9 @@ class AppRoutes {
     ]),
     getPage(RouteName.sublist, const SubjectList(), [Subjectbdng()]),
     getPage(RouteName.topiclist, const TopicList(), [Topicbdng()]),
-    getPage(RouteName.examinstruction, const ExamInstructions(),
-        [Examattendbdng()]),
+    getPage(RouteName.examinstruction, const ExamInstructions(), [
+      Examattendbdng(),
+    ]),
     getPage(RouteName.examresult, const Examsolution(), [Examresultbdng()]),
     getPage(RouteName.exampage, const ExamScreen(), []),
     getPage(RouteName.timeout, ModernTimeoutPage(), []),
@@ -69,18 +71,19 @@ class AppRoutes {
       Videobdng(),
       Audiolistbdng(),
       Notelistbdng(),
-      Typednotebdng()
+      Typednotebdng(),
     ]),
     getPage(RouteName.pdfview, const PdfView(), []),
-    getPage(RouteName.studentDetailsView,const StudentDetailsPage  (), []),
-    getPage(RouteName.imgview, const ImageView(), []),
+    getPage(RouteName.studentDetailsView, const StudentDetailsPage(), []),
+    GetPage(name: RouteName.imgview, page: () => const ImageViewPage()),
     getPage(
-        RouteName.videoplayer,
-        const VideoPlayerScreen(
-            // videoUrl: '',
-            ),
-        []),
+      RouteName.videoplayer,
+      const VideoPlayerScreen(
+        // videoUrl: '',
+      ),
+      [],
+    ),
     getPage(RouteName.idcardview, const IDCardWebView(), [Profilebdng()]),
-    getPage(RouteName.htmlview, HtmlViewer(), [Htmlviewerbdng()])
+    getPage(RouteName.htmlview, HtmlViewer(), [Htmlviewerbdng()]),
   ];
 }

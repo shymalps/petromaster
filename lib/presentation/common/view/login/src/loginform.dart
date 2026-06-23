@@ -85,13 +85,13 @@ class Loginform extends StatelessWidget {
               const SizedBox(height: 8.0),
               Align(
                 alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {
+                // child: TextButton(
+                //   onPressed: () {
                     
-                    // print('Forgot password pressed');
-                  },
-                  child: Text('forgot_password'.tr,style: const TextStyle(color: AppColors.white),),
-                ),
+                //     // print('Forgot password pressed');
+                //   },
+                //   child: Text('forgot_password'.tr,style: const TextStyle(color: AppColors.white),),
+                // ),
               ),
               const SizedBox(height: 24.0),
               Buttonhelper.normalButton(

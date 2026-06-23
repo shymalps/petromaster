@@ -13,7 +13,7 @@ class Aboutus extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: Appbarhelper.pageAppbar(title: 'AboutUs', leading: false),
+      appBar: Appbarhelper.pageAppbar(title: 'AboutUs', leading: true),
       body: SafeArea(
         child: Stack(
           children: [
