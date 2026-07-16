@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:flutter/services.dart';
 import 'package:petromaster/core/helpers/appbarhelper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -20,10 +22,15 @@ class _IDCardWebViewState extends State<IDCardWebView> {
   @override
   void initState() {
     super.initState();
-
     controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..loadHtmlString('''
+      ..setJavaScriptMode(JavaScriptMode.unrestricted);
+    _loadCard();
+  }
+
+  Future<void> _loadCard() async {
+    final logoBytes = await rootBundle.load('assets/images/applogo.png');
+    final logoBase64 = base64Encode(logoBytes.buffer.asUint8List());
+    controller.loadHtmlString('''
 <!DOCTYPE html>
 <html>
 <head>
@@ -157,7 +164,7 @@ class _IDCardWebViewState extends State<IDCardWebView> {
         <div class="id-card-holder">
             <div class="id-card">
                 <div class="header">
-                    <img src="https://petromasteracademy.com/assets/images/1703147133.jpg">
+                    <img src="data:image/png;base64,$logoBase64">
                 </div>
                 <p style="font-size: 12px;margin: 2px;"><strong>Petromaster</strong></p>
                 <p style="font-size: 8px;margin: 2px;"><strong>Arfa Complex, Opposite FIT, Thaikkatukara PO, Aluva - 683106<br>

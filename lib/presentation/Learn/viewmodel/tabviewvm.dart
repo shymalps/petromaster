@@ -15,9 +15,9 @@ class Tabviewvm extends GetxController {
 
   Widget getpage() {
     if (selectedTab.value == 'Notes') {
-      return const Typednotelist();
-    } else if (selectedTab.value == 'Photos') {
       return const NoteList();
+    } else if (selectedTab.value == 'Photos') {
+      return const Typednotelist();
     } else if (selectedTab.value == 'Videos') {
       return const VideoList();
     } else {

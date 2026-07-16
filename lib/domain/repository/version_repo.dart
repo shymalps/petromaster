@@ -12,7 +12,7 @@ class VersionRepo {
   /// Calls the version-check API with the current app version.
   /// Returns [AppVersionModel] with the latest version, or null on failure.
   Future<AppVersionModel?> checkUpdate(String currentVersion) async {
-    final url = AppEndpoints.checkversion + currentVersion;
+    final url = '${AppEndpoints.checkversion}?version=$currentVersion';
 
     consolePrint('==================> VersionRepo: checkUpdate started');
     consolePrint('URL: $url');

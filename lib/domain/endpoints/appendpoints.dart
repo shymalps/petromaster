@@ -69,5 +69,5 @@ class AppEndpoints {
       '${Constants.appBaseUrl}get_studydata_topicid';
 
 
-  static const String checkversion = '${Constants.appBaseUrl}check_version/';
+  static const String checkversion = '${Constants.appBaseUrl}check_version';
 }

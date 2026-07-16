@@ -61,107 +61,192 @@ class ExamInstructionsState extends State<ExamInstructions>
     return PopScope(
         canPop: false,
         child: Obx(
-          () => examattendVm.isloading.value
-              ? const ExamScreenShimmer()
-              : Scaffold(
-                  backgroundColor: const Color(0xFFF8FAFF),
-                  body: CustomScrollView(
-                    slivers: [
-                      SliverAppBar(
-                        automaticallyImplyLeading: false,
-                        centerTitle: true,
-                        expandedHeight: 100,
-                        floating: false,
-                        pinned: true,
-                        flexibleSpace: FlexibleSpaceBar(
-                          background: Container(
-                            decoration: const BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  AppColors.primary,
-                                  AppColors.secondary,
-                                ],
-                              ),
-                            ),
-                            child: const Center(
-                              child: Icon(
-                                Icons.school_rounded,
-                                size: 60,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 16),
-                          child: AnimatedBuilder(
-                            animation: _controller,
-                            builder: (context, child) {
-                              return Transform.translate(
-                                offset: Offset(0, _slideAnimation.value),
-                                child: Opacity(
-                                  opacity: _fadeAnimation.value,
-                                  child: child,
-                                ),
-                              );
-                            },
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Exam Summary Card
-                                _buildSummaryCard(
-                                    context,
-                                    examattendVm
-                                        .timeconvert(examattendVm
-                                            .examData.value!.totalTime)
-                                        .toString(),
-                                    examattendVm
-                                            .examData.value!.markPerQuestion ??
-                                        '',
-                                    examattendVm.questions.length.toString()),
-                                const SizedBox(height: 28),
+          () {
+            // Show shimmer while loading
+            if (examattendVm.isloading.value) {
+              return const ExamScreenShimmer();
+            }
 
-                                // Key Details Section
-                                _buildSectionTitle('Key Details'),
-                                const SizedBox(height: 16),
-                                _buildDetailGrid(
-                                    examattendVm.questions.length.toString(),
-                                    examattendVm
-                                        .examData.value!.markPerQuestion,
-                                    examattendVm.examData.value!.minusMark,
-                                    examattendVm
-                                        .timeconvert(examattendVm
-                                            .examData.value!.totalTime)
-                                        .toString()),
-                                const SizedBox(height: 28),
+            // If examData is null after loading, the exam was already attempted
+            // or the API returned an error — show a friendly error screen
+            if (examattendVm.examData.value == null) {
+              return _buildAlreadyAttemptedScreen(context);
+            }
 
-                                // Instructions Section
-                                _buildSectionTitle('Important Instructions'),
-                                const SizedBox(height: 16),
-                                _buildInstructionList(),
-                                const SizedBox(height: 24),
-                                // Terms Checkbox
-                                _buildTermsCheckbox(),
-                                const SizedBox(height: 32),
-
-                                // Start Button
-                                _buildStartButton(context),
-                                // Bottom padding so content clears nav bar
-                                const SizedBox(height: 24),
+            // Normal instruction screen
+            return Scaffold(
+                backgroundColor: const Color(0xFFF8FAFF),
+                body: CustomScrollView(
+                  slivers: [
+                    SliverAppBar(
+                      automaticallyImplyLeading: false,
+                      centerTitle: true,
+                      expandedHeight: 100,
+                      floating: false,
+                      pinned: true,
+                      flexibleSpace: FlexibleSpaceBar(
+                        background: Container(
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                AppColors.primary,
+                                AppColors.secondary,
                               ],
                             ),
                           ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.school_rounded,
+                              size: 60,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
                       ),
-                    ],
+                    ),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 16),
+                        child: AnimatedBuilder(
+                          animation: _controller,
+                          builder: (context, child) {
+                            return Transform.translate(
+                              offset: Offset(0, _slideAnimation.value),
+                              child: Opacity(
+                                opacity: _fadeAnimation.value,
+                                child: child,
+                              ),
+                            );
+                          },
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Exam Summary Card
+                              _buildSummaryCard(
+                                  context,
+                                  examattendVm
+                                      .timeconvert(examattendVm
+                                          .examData.value!.totalTime)
+                                      .toString(),
+                                  examattendVm
+                                          .examData.value!.markPerQuestion ??
+                                      '',
+                                  examattendVm.questions.length.toString()),
+                              const SizedBox(height: 28),
+
+                              // Key Details Section
+                              _buildSectionTitle('Key Details'),
+                              const SizedBox(height: 16),
+                              _buildDetailGrid(
+                                  examattendVm.questions.length.toString(),
+                                  examattendVm.examData.value!.markPerQuestion,
+                                  examattendVm.examData.value!.minusMark,
+                                  examattendVm
+                                      .timeconvert(examattendVm
+                                          .examData.value!.totalTime)
+                                      .toString()),
+                              const SizedBox(height: 28),
+
+                              // Instructions Section
+                              _buildSectionTitle('Important Instructions'),
+                              const SizedBox(height: 16),
+                              _buildInstructionList(),
+                              const SizedBox(height: 24),
+                              // Terms Checkbox
+                              _buildTermsCheckbox(),
+                              const SizedBox(height: 32),
+
+                              // Start Button
+                              _buildStartButton(context),
+                              // Bottom padding so content clears nav bar
+                              const SizedBox(height: 24),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ));
+          },
+        ));
+  }
+
+  /// Shown when the API returns "Already Attempted" or any error that leaves
+  /// examData null. Prevents the `!` null-check crash and gives the user a
+  /// clear path back to the dashboard.
+  Widget _buildAlreadyAttemptedScreen(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFF),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade50,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.assignment_turned_in_rounded,
+                  size: 72,
+                  color: Colors.orange.shade600,
+                ),
+              ),
+              const SizedBox(height: 28),
+              const Text(
+                'Exam Already Attempted',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2D3748),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'You have already attempted this exam.\nYou cannot take it again.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 15,
+                  color: Colors.grey.shade600,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 40),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => Get.offAllNamed(RouteName.navbar),
+                  icon: const Icon(Icons.home_rounded, color: Colors.white),
+                  label: const Text(
+                    'Go to Dashboard',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    backgroundColor: AppColors.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
                   ),
                 ),
-        ));
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildTermsCheckbox() {

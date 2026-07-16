@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:get/get.dart';
 
+import '../../../../../app/config/routes/route_name.dart';
 import '../../../../../app/config/theme/text.dart';
 // import 'package:oyster_lms/app/config/theme/text.dart';
 
@@ -147,14 +149,20 @@ class _ExamViolationScreenState extends State<ExamViolationScreen> {
         ),
       ),
       onPressed: () {
-        Navigator.of(context).popUntil((route) => route.isFirst);
+        // Reset system UI to normal mode BEFORE navigating,
+        // so the dashboard navbar safe area renders correctly.
+        SystemChrome.setEnabledSystemUIMode(
+          SystemUiMode.manual,
+          overlays: SystemUiOverlay.values,
+        );
+        Get.offAllNamed(RouteName.navbar);
       },
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Icon(Icons.home_rounded),
           const SizedBox(width: 12),
-          AppTextHelper.button(text: 'Go to Home', fcolor: Colors.white),
+          AppTextHelper.button(text: 'Go to Home', fcolor: Colors.red[600] ?? Colors.red),
         ],
       ),
     ).animate().fadeIn(duration: 500.ms, delay: 1000.ms).slide(
@@ -164,7 +172,9 @@ class _ExamViolationScreenState extends State<ExamViolationScreen> {
 
   @override
   void dispose() {
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    // Do NOT call SystemChrome.setEnabledSystemUIMode(edgeToEdge) here.
+    // Doing so in dispose() causes the bottom navbar safe area to disappear
+    // on the dashboard screen after navigation.
     super.dispose();
   }
 }
